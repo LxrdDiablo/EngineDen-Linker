@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Product:
-    description: str
+    row_number: int = 0
+    description: str = ""
 
     status: str = "Pending"
 
