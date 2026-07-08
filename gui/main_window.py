@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QFileDialog,
+    QProgressBar,
 )
 
 
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
 
         self.build_header()
         self.build_file_panel()
+        self.build_progress_panel()
 
         self.main_layout.addStretch()
 
@@ -45,7 +47,6 @@ class MainWindow(QMainWindow):
     def build_file_panel(self):
 
         excel_title = QLabel("Excel File")
-
         self.main_layout.addWidget(excel_title)
 
         excel_layout = QHBoxLayout()
@@ -54,7 +55,6 @@ class MainWindow(QMainWindow):
         self.excel_edit.setPlaceholderText("Select an Excel workbook...")
 
         excel_button = QPushButton("Browse")
-
         excel_button.clicked.connect(self.select_excel)
 
         excel_layout.addWidget(self.excel_edit)
@@ -63,7 +63,6 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(excel_layout)
 
         output_title = QLabel("Output Folder")
-
         self.main_layout.addWidget(output_title)
 
         output_layout = QHBoxLayout()
@@ -72,13 +71,26 @@ class MainWindow(QMainWindow):
         self.output_edit.setPlaceholderText("Select output folder...")
 
         output_button = QPushButton("Browse")
-
         output_button.clicked.connect(self.select_output)
 
         output_layout.addWidget(self.output_edit)
         output_layout.addWidget(output_button)
 
         self.main_layout.addLayout(output_layout)
+
+    def build_progress_panel(self):
+
+        progress_title = QLabel("Progress")
+        self.main_layout.addWidget(progress_title)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+
+        self.main_layout.addWidget(self.progress_bar)
+
+        self.status_label = QLabel("Status: Waiting...")
+        self.main_layout.addWidget(self.status_label)
 
     def select_excel(self):
 
