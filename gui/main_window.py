@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QFileDialog,
     QProgressBar,
+    QTableWidget,
 )
 
 
@@ -28,11 +29,11 @@ class MainWindow(QMainWindow):
         self.build_header()
         self.build_file_panel()
         self.build_progress_panel()
+        self.build_product_table()
 
         self.main_layout.addStretch()
 
     def build_header(self):
-
         title = QLabel("EngineDen Linker")
         title.setStyleSheet("""
             font-size:24px;
@@ -91,6 +92,26 @@ class MainWindow(QMainWindow):
 
         self.status_label = QLabel("Status: Waiting...")
         self.main_layout.addWidget(self.status_label)
+
+    def build_product_table(self):
+
+        table_title = QLabel("Products")
+        self.main_layout.addWidget(table_title)
+
+        self.product_table = QTableWidget()
+
+        self.product_table.setColumnCount(4)
+
+        self.product_table.setHorizontalHeaderLabels([
+            "Product",
+            "Status",
+            "Confidence",
+            "EngineDen URL"
+        ])
+
+        self.product_table.setRowCount(0)
+
+        self.main_layout.addWidget(self.product_table)
 
     def select_excel(self):
 
