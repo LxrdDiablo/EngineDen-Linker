@@ -11,7 +11,7 @@ class ExcelService:
 
         if "DESC" not in df.columns:
             raise Exception(
-                "Column 'DESC' was not found in the Excel file."
+                "The workbook does not contain a 'DESC' column."
             )
 
         products = []
@@ -23,11 +23,11 @@ class ExcelService:
             if description == "" or description.lower() == "nan":
                 continue
 
-            product = Product(
-                row_number=index + 2,
-                description=description
+            products.append(
+                Product(
+                    row_number=index + 2,
+                    description=description,
+                )
             )
-
-            products.append(product)
 
         return products
