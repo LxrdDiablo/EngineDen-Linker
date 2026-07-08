@@ -30,8 +30,7 @@ class MainWindow(QMainWindow):
         self.build_file_panel()
         self.build_progress_panel()
         self.build_product_table()
-
-        self.main_layout.addStretch()
+        self.build_control_panel()
 
     def build_header(self):
         title = QLabel("EngineDen Linker")
@@ -40,15 +39,14 @@ class MainWindow(QMainWindow):
             font-weight:bold;
         """)
 
-        subtitle = QLabel("Milestone 3 - Professional GUI")
+        subtitle = QLabel("Milestone 4 - Excel Integration")
 
         self.main_layout.addWidget(title)
         self.main_layout.addWidget(subtitle)
 
     def build_file_panel(self):
 
-        excel_title = QLabel("Excel File")
-        self.main_layout.addWidget(excel_title)
+        self.main_layout.addWidget(QLabel("Excel File"))
 
         excel_layout = QHBoxLayout()
 
@@ -63,8 +61,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(excel_layout)
 
-        output_title = QLabel("Output Folder")
-        self.main_layout.addWidget(output_title)
+        self.main_layout.addWidget(QLabel("Output Folder"))
 
         output_layout = QHBoxLayout()
 
@@ -81,8 +78,7 @@ class MainWindow(QMainWindow):
 
     def build_progress_panel(self):
 
-        progress_title = QLabel("Progress")
-        self.main_layout.addWidget(progress_title)
+        self.main_layout.addWidget(QLabel("Progress"))
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
@@ -95,8 +91,7 @@ class MainWindow(QMainWindow):
 
     def build_product_table(self):
 
-        table_title = QLabel("Products")
-        self.main_layout.addWidget(table_title)
+        self.main_layout.addWidget(QLabel("Products"))
 
         self.product_table = QTableWidget()
 
@@ -109,9 +104,23 @@ class MainWindow(QMainWindow):
             "EngineDen URL"
         ])
 
-        self.product_table.setRowCount(0)
-
         self.main_layout.addWidget(self.product_table)
+
+    def build_control_panel(self):
+
+        button_layout = QHBoxLayout()
+
+        button_layout.addStretch()
+
+        self.start_button = QPushButton("Start")
+
+        self.stop_button = QPushButton("Stop")
+        self.stop_button.setEnabled(False)
+
+        button_layout.addWidget(self.start_button)
+        button_layout.addWidget(self.stop_button)
+
+        self.main_layout.addLayout(button_layout)
 
     def select_excel(self):
 
