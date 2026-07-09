@@ -1,34 +1,63 @@
-from PySide6.QtCore import QThread
-
-from workers.processing_worker import ProcessingWorker
+from PySide6.QtCore import Qt, QThread
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QPushButton,
-    QFileDialog,
+    QMainWindow,
+    QMessageBox,
     QProgressBar,
+    QPushButton,
     QTableWidget,
     QTableWidgetItem,
-    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+    QGroupBox,
+    QGridLayout,
+    QHeaderView,
 )
 
 from services.excel_service import ExcelService
+from workers.processing_worker import ProcessingWorker
 
 
 class MainWindow(QMainWindow):
-def update_progress(self, value):
 
-    self.progress_bar.setValue(value)
+    def __init__(self):
 
+        super().__init__()
 
-def update_status(self, text):
+        self.products = []
 
-    self.status_label.setText(text)
+        self.thread = None
+        self.worker = None
 
+        self.setWindowTitle("EngineDen Linker v1.0")
+
+        self.resize(1400, 850)
+
+        self.setup_ui()
+            def setup_ui(self):
+
+        central = QWidget()
+
+        self.setCentralWidget(central)
+
+        self.main_layout = QVBoxLayout()
+
+        central.setLayout(self.main_layout)
+
+        self.build_header()
+
+        self.build_file_panel()
+
+        self.build_progress_panel()
+
+        self.build_statistics_panel()
+
+        self.build_product_table()
+
+        self.build_control_panel()
 
 def product_finished(self, product):
 
@@ -89,17 +118,26 @@ def product_finished(self, product):
         )
 
         break
-    def build_header(self):
+        def build_header(self):
 
         title = QLabel("EngineDen Linker")
+
         title.setStyleSheet("""
-            font-size:24px;
+            font-size:28px;
             font-weight:bold;
         """)
 
-        subtitle = QLabel("Automatic Engine Product Linking")
+        subtitle = QLabel(
+            "Automatic Engine Product Linking"
+        )
+
+        subtitle.setStyleSheet("""
+            color:#aaaaaa;
+            font-size:13px;
+        """)
 
         self.main_layout.addWidget(title)
+
         self.main_layout.addWidget(subtitle)
 
     def build_file_panel(self):
@@ -145,24 +183,92 @@ def product_finished(self, product):
         self.status_label = QLabel("Status: Waiting...")
 
         self.main_layout.addWidget(self.status_label)
+    
+    def build_statistics_panel(self):
 
-    def build_product_table(self):
+        group = QGroupBox("Statistics")
 
-        self.main_layout.addWidget(QLabel("Products"))
+        layout = QGridLayout()
+
+        group.setLayout(layout)
+
+        self.total_label = QLabel("0")
+
+        self.processed_label = QLabel("0")
+
+        self.found_label = QLabel("0")
+
+        self.missing_label = QLabel("0")
+
+        self.accuracy_label = QLabel("0%")
+
+        layout.addWidget(QLabel("Total"),0,0)
+        layout.addWidget(self.total_label,0,1)
+
+        layout.addWidget(QLabel("Processed"),1,0)
+        layout.addWidget(self.processed_label,1,1)
+
+        layout.addWidget(QLabel("Found"),2,0)
+        layout.addWidget(self.found_label,2,1)
+
+        layout.addWidget(QLabel("Missing"),3,0)
+        layout.addWidget(self.missing_label,3,1)
+
+        layout.addWidget(QLabel("Accuracy"),4,0)
+        layout.addWidget(self.accuracy_label,4,1)
+
+        self.main_layout.addWidget(group)
+    
+        def build_product_table(self):
 
         self.product_table = QTableWidget()
 
         self.product_table.setColumnCount(5)
 
         self.product_table.setHorizontalHeaderLabels([
-    "Excel Product",
-    "Matched Product",
-    "Confidence",
-    "Status",
-    "EngineDen URL",
-])
 
-        self.main_layout.addWidget(self.product_table)
+            "Excel Product",
+
+            "Matched Product",
+
+            "Confidence",
+
+            "Status",
+
+            "EngineDen URL"
+
+        ])
+
+        header = self.product_table.horizontalHeader()
+
+        header.setSectionResizeMode(
+            0,
+            QHeaderView.Stretch
+        )
+
+        header.setSectionResizeMode(
+            1,
+            QHeaderView.Stretch
+        )
+
+        header.setSectionResizeMode(
+            2,
+            QHeaderView.ResizeToContents
+        )
+
+        header.setSectionResizeMode(
+            3,
+            QHeaderView.ResizeToContents
+        )
+
+        header.setSectionResizeMode(
+            4,
+            QHeaderView.Stretch
+        )
+
+        self.main_layout.addWidget(
+            self.product_table
+        )
 
     def build_control_panel(self):
 
