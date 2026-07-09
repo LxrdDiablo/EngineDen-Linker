@@ -1,3 +1,5 @@
+import traceback
+
 from PySide6.QtCore import QObject, Signal
 
 from services.processing_service import ProcessingService
@@ -20,9 +22,7 @@ class ProcessingWorker(QObject):
         super().__init__()
 
         self.products = products
-
         self.processor = ProcessingService()
-
         self.running = True
 
     def stop(self):
@@ -36,38 +36,47 @@ class ProcessingWorker(QObject):
         found = 0
         missing = 0
 
-        for index, product in enumerate(self.products):
+        try:
 
-            if not self.running:
-                break
+            for index, product in enumerate(self.products):
 
-            self.status.emit(
-                f"Searching: {product.description}"
-            )
+                if not self.running:
+                    break
 
-            product = self.processor.process_product(product)
+                print(f"\nProcessing row {product.row_number}")
+                print(f"Description: {product.description}")
 
-            if product.status == "Found":
-                found += 1
-            else:
-                missing += 1
+                self.status.emit(
+                    f"Searching: {product.description}"
+                )
 
-            self.product_processed.emit(product)
+                product = self.processor.process_product(product)
 
-            self.progress.emit(
-                int(((index + 1) / total) * 100)
-            )
+                print("Finished processing")
 
-            self.statistics.emit({
+                if product.status == "Found":
+                    found += 1
+                else:
+                    missing += 1
 
-                "processed": index + 1,
+                self.product_processed.emit(product)
 
-                "found": found,
+                self.progress.emit(
+                    int(((index + 1) / total) * 100)
+                )
 
-                "missing": missing,
+                self.statistics.emit({
+                    "total": total,
+                    "processed": index + 1,
+                    "found": found,
+                    "missing": missing
+                })
 
-                "total": total
+        except Exception:
 
-            })
+            print("\n========== WORKER ERROR ==========")
+            traceback.print_exc()
 
-        self.finished.emit()
+        finally:
+
+            self.finished.emit()

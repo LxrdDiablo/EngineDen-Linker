@@ -1,75 +1,50 @@
+import os
+from datetime import datetime
+
 from openpyxl import load_workbook
 
-from models.product import Product
 
-
-class ExcelService:
+class ExportService:
     """
-    Reads and writes EngineDen workbooks.
+    Exports processed products to a new Excel workbook.
     """
 
-    def load_products(self, filename):
-
-        workbook = load_workbook(filename)
-
-        sheet = workbook.active
-
-        products = []
-
-        for row in range(2, sheet.max_row + 1):
-
-            description = sheet.cell(row=row, column=1).value
-
-            if not description:
-                continue
-
-            products.append(
-
-                Product(
-                    row_number=row,
-                    description=str(description).strip()
-                )
-
-            )
-
-        workbook.close()
-
-        return products
-
-    def save_products(self, input_file, output_file, products):
+    def export(self, input_file, output_folder, products):
 
         workbook = load_workbook(input_file)
-
         sheet = workbook.active
 
-        headers = {
-
-            "Matched Product": 2,
-            "Confidence": 3,
-            "EngineDen URL": 4,
-            "Image URL": 5,
-            "Status": 6
-
+        columns = {
+            "Matched Product": 6,
+            "Confidence": 7,
+            "EngineDen URL": 8,
+            "Image URL": 9,
+            "Status": 10,
         }
 
-        for title, column in headers.items():
-
-            sheet.cell(row=1, column=column).value = title
+        for title, col in columns.items():
+            sheet.cell(row=1, column=col).value = title
 
         for product in products:
 
             row = product.row_number
 
-            sheet.cell(row=row, column=2).value = product.matched_name
+            sheet.cell(row=row, column=6).value = product.matched_name
+            sheet.cell(row=row, column=7).value = product.confidence
+            sheet.cell(row=row, column=8).value = product.engineden_url
+            sheet.cell(row=row, column=9).value = product.image_url
+            sheet.cell(row=row, column=10).value = product.status
 
-            sheet.cell(row=row, column=3).value = product.confidence
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            sheet.cell(row=row, column=4).value = product.engineden_url
+        filename = f"EngineDen_Output_{timestamp}.xlsx"
 
-            sheet.cell(row=row, column=5).value = product.image_url
+        output_path = os.path.join(
+            output_folder,
+            filename
+        )
 
-            sheet.cell(row=row, column=6).value = product.status
-
-        workbook.save(output_file)
-
+        workbook.save(output_path)
         workbook.close()
+
+        return output_path
