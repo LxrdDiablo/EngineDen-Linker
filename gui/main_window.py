@@ -13,10 +13,16 @@ from gui.widgets.results_table import ResultsTable
 from gui.widgets.control_panel import ControlPanel
 
 from services.excel_service import ExcelService
+from services.export_service import ExportService
+
 from workers.processing_worker import ProcessingWorker
 
 
 class MainWindow(QMainWindow):
+    """
+    Main application window.
+    Coordinates the GUI and background processing.
+    """
 
     def __init__(self):
 
@@ -28,6 +34,7 @@ class MainWindow(QMainWindow):
         self.worker = None
 
         self.excel_service = ExcelService()
+        self.export_service = ExportService()
 
         self.setWindowTitle("EngineDen Linker v1.0")
 
@@ -73,6 +80,14 @@ class MainWindow(QMainWindow):
             self.stop_processing
         )
 
+        self.control_panel.export_clicked.connect(
+            self.export_results
+        )
+
+        self.control_panel.open_folder_clicked.connect(
+            self.open_output_folder
+        )
+
     def start_processing(self):
 
         excel = self.file_panel.excel_file()
@@ -89,12 +104,13 @@ class MainWindow(QMainWindow):
 
         try:
 
-            self.products = (
-                self.excel_service.load_products(
-                    excel
-                )
-            )
+            self.products = self.excel_service.load_products(excel)
 
+if self.file_panel.is_test_mode():
+
+    self.products = self.products[
+        :self.file_panel.row_limit()
+    ]
         except Exception as e:
 
             QMessageBox.critical(

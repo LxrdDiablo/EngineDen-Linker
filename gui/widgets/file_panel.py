@@ -1,10 +1,12 @@
-from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QFileDialog,
     QGridLayout,
     QGroupBox,
     QLineEdit,
     QPushButton,
+    QCheckBox,
+    QLabel,
+    QSpinBox,
 )
 
 
@@ -20,28 +22,19 @@ class FilePanel(QGroupBox):
 
         super().__init__("Project")
 
-        layout = QGridLayout()
-        self.setLayout(layout)
+        self.test_mode = QCheckBox("Test Mode")
 
-        self.excel_edit = QLineEdit()
-        self.output_edit = QLineEdit()
+self.limit = QSpinBox()
 
-        excel_button = QPushButton("Browse")
-        output_button = QPushButton("Browse")
+self.limit.setMinimum(1)
+self.limit.setMaximum(10000)
+self.limit.setValue(100)
 
-        excel_button.clicked.connect(
-            self.select_excel
-        )
+layout.addWidget(self.test_mode, 2, 0)
 
-        output_button.clicked.connect(
-            self.select_output
-        )
+layout.addWidget(QLabel("Rows"), 2, 1)
 
-        layout.addWidget(self.excel_edit, 0, 0)
-        layout.addWidget(excel_button, 0, 1)
-
-        layout.addWidget(self.output_edit, 1, 0)
-        layout.addWidget(output_button, 1, 1)
+layout.addWidget(self.limit, 2, 2)
 
     def select_excel(self):
 
@@ -86,3 +79,12 @@ class FilePanel(QGroupBox):
     def output_folder(self):
 
         return self.output_edit.text()
+
+        def is_test_mode(self):
+
+    return self.test_mode.isChecked()
+
+
+def row_limit(self):
+
+    return self.limit.value()

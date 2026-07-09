@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (
+from PySide6.QtGui import QColor
     QHeaderView,
     QTableWidget,
     QTableWidgetItem,
@@ -47,34 +47,56 @@ class ResultsTable(QTableWidget):
 
     def update_product(self, product):
 
-        row = product.row_number - 2
+    row = product.row_number - 2
 
-        if row < 0 or row >= self.rowCount():
-            return
+    if row < 0 or row >= self.rowCount():
+        return
 
-        self.setItem(
-            row,
-            1,
-            QTableWidgetItem(product.matched_name)
-        )
+    items = [
 
-        self.setItem(
-            row,
-            2,
-            QTableWidgetItem(str(product.confidence))
-        )
+        QTableWidgetItem(product.matched_name),
 
-        self.setItem(
-            row,
-            3,
-            QTableWidgetItem(product.status)
-        )
+        QTableWidgetItem(str(product.confidence)),
 
-        self.setItem(
-            row,
-            4,
-            QTableWidgetItem(product.engineden_url)
-        )
+        QTableWidgetItem(product.status),
+
+        QTableWidgetItem(product.engineden_url)
+
+    ]
+
+    for column, item in enumerate(items, start=1):
+
+        self.setItem(row, column, item)
+
+    # -------------------------
+    # Row Colours
+    # -------------------------
+
+    if product.status == "Found":
+
+        if product.confidence >= 95:
+
+            colour = QColor(210, 255, 210)      # Green
+
+        elif product.confidence >= 80:
+
+            colour = QColor(255, 255, 190)      # Yellow
+
+        else:
+
+            colour = QColor(255, 225, 180)      # Orange
+
+    else:
+
+        colour = QColor(255, 210, 210)          # Red
+
+    for col in range(self.columnCount()):
+
+        cell = self.item(row, col)
+
+        if cell:
+
+            cell.setBackground(colour)
 
     def clear_results(self):
 
