@@ -1,3 +1,6 @@
+from PySide6.QtCore import QThread
+
+from workers.processing_worker import ProcessingWorker
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -17,27 +20,75 @@ from services.excel_service import ExcelService
 
 
 class MainWindow(QMainWindow):
+def update_progress(self, value):
 
-    def __init__(self):
-        super().__init__()
+    self.progress_bar.setValue(value)
 
-        self.products = []
 
-        self.setWindowTitle("EngineDen Linker v1.0")
-        self.resize(1100, 700)
+def update_status(self, text):
 
-        central = QWidget()
-        self.setCentralWidget(central)
+    self.status_label.setText(text)
 
-        self.main_layout = QVBoxLayout()
-        central.setLayout(self.main_layout)
 
-        self.build_header()
-        self.build_file_panel()
-        self.build_progress_panel()
-        self.build_product_table()
-        self.build_control_panel()
+def product_finished(self, product):
 
+    for row, p in enumerate(self.products):
+
+        if p.row_number == product.row_number:
+
+            self.product_table.setItem(
+                row,
+                1,
+                QTableWidgetItem(product.status)
+            )
+
+            self.product_table.setItem(
+                row,
+                2,
+                QTableWidgetItem(str(product.confidence))
+            )
+
+            self.product_table.setItem(
+                row,
+                3,
+                QTableWidgetItem(product.engineden_url)
+            )
+
+            break
+
+
+def product_finished(self, product):
+
+    for row, p in enumerate(self.products):
+
+        if p.row_number != product.row_number:
+            continue
+
+        self.product_table.setItem(
+            row,
+            1,
+            QTableWidgetItem(product.matched_name)
+        )
+
+        self.product_table.setItem(
+            row,
+            2,
+            QTableWidgetItem(str(product.confidence))
+        )
+
+        self.product_table.setItem(
+            row,
+            3,
+            QTableWidgetItem(product.status)
+        )
+
+        self.product_table.setItem(
+            row,
+            4,
+            QTableWidgetItem(product.engineden_url)
+        )
+
+        break
     def build_header(self):
 
         title = QLabel("EngineDen Linker")
@@ -46,7 +97,7 @@ class MainWindow(QMainWindow):
             font-weight:bold;
         """)
 
-        subtitle = QLabel("Milestone 4 - Excel Integration")
+        subtitle = QLabel("Automatic Engine Product Linking")
 
         self.main_layout.addWidget(title)
         self.main_layout.addWidget(subtitle)
@@ -101,14 +152,15 @@ class MainWindow(QMainWindow):
 
         self.product_table = QTableWidget()
 
-        self.product_table.setColumnCount(4)
+        self.product_table.setColumnCount(5)
 
         self.product_table.setHorizontalHeaderLabels([
-            "Product",
-            "Status",
-            "Confidence",
-            "EngineDen URL",
-        ])
+    "Excel Product",
+    "Matched Product",
+    "Confidence",
+    "Status",
+    "EngineDen URL",
+])
 
         self.main_layout.addWidget(self.product_table)
 
@@ -119,12 +171,77 @@ class MainWindow(QMainWindow):
         layout.addStretch()
 
         self.start_button = QPushButton("Start")
-        self.stop_button = QPushButton("Stop")
+        self.stop_button.clicked.connect(
+    self.stop_processing
+)def stop_processing(self):
+
+    if self.worker:
+
+        self.worker.stop()
+
+        self.status_label.setText(
+            "Stopping..."
+        )
 
         self.stop_button.setEnabled(False)
 
-        self.start_button.clicked.connect(self.load_excel)
+        self.start_button.clicked.connect(self.start_processing)
+def start_processing(self):
 
+    self.load_excel()
+
+    if not self.products:
+        return
+
+    self.start_button.setEnabled(False)
+    self.stop_button.setEnabled(True)
+
+    self.progress_bar.setValue(0)
+
+    self.thread = QThread()
+
+    self.worker = ProcessingWorker(
+        self.products
+    )
+
+    self.worker.moveToThread(self.thread)
+
+    self.thread.started.connect(
+        self.worker.run
+    )
+
+    self.worker.progress.connect(
+        self.update_progress
+    )
+
+    self.worker.status.connect(
+        self.update_status
+    )
+
+    self.worker.product_processed.connect(
+        self.product_finished
+    )
+
+    self.worker.finished.connect(
+        self.processing_finished
+    )
+
+    self.worker.finished.connect(
+        self.thread.quit
+    )
+
+    self.thread.finished.connect(
+        self.thread.deleteLater
+    )
+
+    self.thread.start()
+
+    QMessageBox.information(
+        self,
+        "Next Step",
+        f"{len(self.products)} products loaded.\n\n"
+        "The processing worker will be connected next."
+    )
         layout.addWidget(self.start_button)
         layout.addWidget(self.stop_button)
 
@@ -168,33 +285,39 @@ class MainWindow(QMainWindow):
 
     def populate_table(self):
 
-        self.product_table.setRowCount(len(self.products))
+    self.product_table.setRowCount(len(self.products))
 
-        for row, product in enumerate(self.products):
+    for row, product in enumerate(self.products):
 
-            self.product_table.setItem(
-                row,
-                0,
-                QTableWidgetItem(product.description)
-            )
+        self.product_table.setItem(
+            row,
+            0,
+            QTableWidgetItem(product.description)
+        )
 
-            self.product_table.setItem(
-                row,
-                1,
-                QTableWidgetItem(product.status)
-            )
+        self.product_table.setItem(
+            row,
+            1,
+            QTableWidgetItem("")
+        )
 
-            self.product_table.setItem(
-                row,
-                2,
-                QTableWidgetItem(product.confidence)
-            )
+        self.product_table.setItem(
+            row,
+            2,
+            QTableWidgetItem("")
+        )
 
-            self.product_table.setItem(
-                row,
-                3,
-                QTableWidgetItem(product.engineden_url)
-            )
+        self.product_table.setItem(
+            row,
+            3,
+            QTableWidgetItem("Waiting")
+        )
+
+        self.product_table.setItem(
+            row,
+            4,
+            QTableWidgetItem("")
+        )
 
     def select_excel(self):
 
